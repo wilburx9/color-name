@@ -44,7 +44,7 @@ func TestNotNormalized(t *testing.T) {
 
 }
 
-func TestRGBToHSL(t *testing.T) {
+func TestRGBParsedToValidToHSL(t *testing.T) {
 	var tests = []struct {
 		input   color.RGBA
 		expects HSL
@@ -78,6 +78,33 @@ func TestRGBToHSL(t *testing.T) {
 	for _, test := range tests {
 		if hsl := toHsl(test.input); !eq(hsl, test.expects) {
 			t.Errorf(`toHsl("%+v") == %+v. Expects %+v`, test.input, hsl, test.expects)
+		}
+	}
+}
+
+
+func TestValidStringColorsParsedToRGBA(t *testing.T) {
+	var tests = []string{
+		"FFFFFF", "333333", "EEEEEE", "66666", "4342FF", "544092", "098765",
+	}
+
+	for _, test := range tests {
+		_, e := strToRGBA(test)
+		if e != nil {
+			t.Errorf(`strToRGBA("%v") == error: %v`, test, e)
+		}
+	}
+}
+
+func TestInValidStringColorsNotParsedToRGBA(t *testing.T) {
+	var tests = []string{
+		"FFFF", "#333333", "0987657EEEEEE", "iuewkkd", "iwd23uiw", "4311194", "09yhh9392-ir",
+	}
+
+	for _, test := range tests {
+		v, e := strToRGBA(test)
+		if e == nil {
+			t.Errorf(`strToRGBA("%v") == %v`, test, v)
 		}
 	}
 }

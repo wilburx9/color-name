@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -14,7 +15,6 @@ type HSL struct {
 
 func main() {
 }
-
 
 func normalize(color string) (string, error) {
 
@@ -109,4 +109,31 @@ func toHsl(rgba color.RGBA) HSL {
 		l * 100,
 	}
 
+}
+
+func strToRGBA(str string) (color.RGBA, error) {
+	rStr := fmt.Sprintf("0x%v", str[0:2])
+	gStr := fmt.Sprintf("0x%v",  str[2:4])
+	bStr := fmt.Sprintf("0x%v", str[4:])
+
+	r, err := strconv.ParseUint(rStr, 0, 8)
+	if err != nil {
+		return color.RGBA{}, err
+	}
+
+	g, err := strconv.ParseUint(gStr, 0, 8)
+	if err != nil {
+		return color.RGBA{}, err
+	}
+
+	b, err := strconv.ParseUint(bStr, 0, 8)
+	if err != nil {
+		return color.RGBA{}, err
+	}
+
+	return color.RGBA{
+		R: uint8(r),
+		G: uint8(g),
+		B: uint8(b),
+	}, nil
 }
