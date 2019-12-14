@@ -3,11 +3,16 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image/color"
+	"math"
 	"strings"
 )
 
-func main() {
+type HSL struct {
+	H, S, L float64
+}
 
+func main() {
 }
 
 
@@ -51,4 +56,57 @@ func normalize(color string) (string, error) {
 		return "", fmt.Errorf("#%v appears to be an invalid colorStr\n", color)
 	}
 	return str, nil
+}
+
+func toHsl(rgba color.RGBA) HSL {
+	r, g, b := float64(rgba.R), float64(rgba.G), float64(rgba.B)
+	r /= 255
+	g /= 255
+	b /= 255
+	min := math.Min(r, math.Min(g, b))
+	max := math.Max(r, math.Max(g, b))
+	delta := max - min
+
+	l := (min + max) / 2
+
+	var s float64
+	if max != min {
+		var divisor float64
+		if l <= 0.5 {
+			divisor = max + min
+		} else {
+			divisor = 2 - max - min
+		}
+		s = delta / divisor
+	}
+
+	var h float64
+
+	if delta != 0 {
+		var segment float64
+		var shift float64
+		switch max {
+		case r:
+			segment = (g - b) / delta
+			if segment < 0 {
+				shift = 360 / 60
+			} else {
+				shift = 0 / 60
+			}
+			break
+		case g:
+			segment = (b - r) / delta
+			shift = 120 / 60
+		case b:
+			segment = (r - g) / delta
+			shift = 240 / 60
+		}
+		h = segment + shift
+	}
+	return HSL{
+		h * 60,
+		s * 100,
+		l * 100,
+	}
+
 }

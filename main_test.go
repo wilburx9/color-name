@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"image/color"
+	"math"
+	"testing"
+)
 
 func TestNormalized(t *testing.T) {
 	var tests = []struct {
@@ -26,9 +30,8 @@ func TestNormalized(t *testing.T) {
 
 }
 
-
 func TestNotNormalized(t *testing.T) {
-	var tests = []string {
+	var tests = []string{
 		"2", "33", "#EE", "66666", "#4342f", "544ZiTotr", "09876tghf",
 	}
 
@@ -39,4 +42,42 @@ func TestNotNormalized(t *testing.T) {
 		}
 	}
 
+}
+
+func TestRGBToHSL(t *testing.T) {
+	var tests = []struct {
+		input   color.RGBA
+		expects HSL
+	}{
+		{color.RGBA{R: 255, G: 255, B: 255}, HSL{H: 0, S: 0, L: 100}}, // White
+		{color.RGBA{R: 0, G: 0, B: 0}, HSL{H: 0, S: 0, L: 0}},         // Black
+		{color.RGBA{R: 255, G: 0, B: 0}, HSL{H: 0, S: 100, L: 50}},    // Red
+		{color.RGBA{R: 0, G: 255, B: 0}, HSL{H: 120, S: 100, L: 50}},  // Lime
+		{color.RGBA{R: 0, G: 0, B: 255}, HSL{H: 240, S: 100, L: 50}},  // Blue
+		{color.RGBA{R: 255, G: 255, B: 0}, HSL{H: 60, S: 100, L: 50}}, // Yellow
+		{color.RGBA{R: 0, G: 0, B: 128}, HSL{H: 240, S: 100, L: 25}},  // Navy
+		{color.RGBA{R: 128, G: 0, B: 0}, HSL{H: 0, S: 100, L: 25}},    // Maroon
+		{color.RGBA{R: 191, G: 191, B: 191}, HSL{H: 0, S: 0, L: 75}},  // Sliver
+	}
+
+	const minDiff = 0.5
+
+	eq := func(a HSL, b HSL) bool {
+		if math.Abs(a.H-b.H) > minDiff {
+			return false
+		}
+		if math.Abs(a.S-b.S) > minDiff {
+			return false
+		}
+		if math.Abs(a.L-b.L) > minDiff {
+			return false
+		}
+		return true
+	}
+
+	for _, test := range tests {
+		if hsl := toHsl(test.input); !eq(hsl, test.expects) {
+			t.Errorf(`toHsl("%+v") == %+v. Expects %+v`, test.input, hsl, test.expects)
+		}
+	}
 }
