@@ -17,7 +17,7 @@ type HSL struct {
 
 func main() {
 	hexPtr := flag.String("h", "",
-		"The hex value of the color whose colorName you want. Accepted formats: FFF, #FFF, FFFF, #FFFF, FFFFFF, #FFFFFF, FFFFFFFF, #FFFFFFFF ")
+		"The hex value of the color whose colorName you want. Accepted formats: FFF, #FFF, FFFF, #FFFF, FFFFFF, #FFFFFF, FFFFFFFF, #FFFFFFFF")
 	flag.Parse()
 
 	c := *hexPtr
@@ -41,15 +41,18 @@ func main() {
 		return
 	}
 
-	item, err := colorName(normalized, rgb)
+	item, exactMatch, err := colorName(normalized, rgb)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 		return
 	}
 
-	fmt.Println(item.name)
-
+	if exactMatch {
+		fmt.Printf("#%v is %v\n", item.color, item.name)
+	} else {
+		fmt.Printf("#%v closely matches %v\n", item.color, item.name)
+	}
 }
 
 func normalize(color string) (string, error) {
@@ -165,14 +168,14 @@ func strToRGBA(str string) (color.RGBA, error) {
 	}, nil
 }
 
-func colorName(str string, rgb color.RGBA) (item, error) {
+func colorName(str string, rgb color.RGBA) (item, bool, error) {
 	var hsl = rgbToHsl(rgb)
 	var ndf, ndf1, ndf2 float64
 	var cl = -1
 	var df float64 = -1
 	for i, v := range colorItems {
 		if v.color == str {
-			return v, nil
+			return v, true, nil
 		}
 
 		rbg2, _ := strToRGBA(v.color)
@@ -194,8 +197,8 @@ func colorName(str string, rgb color.RGBA) (item, error) {
 	}
 
 	if cl < 0 {
-		return item{}, fmt.Errorf("#%s is an invalid color", str)
+		return item{}, false, fmt.Errorf("#%s is an invalid color", str)
 	}
 
-	return colorItems[cl], nil
+	return colorItems[cl], false, nil
 }
