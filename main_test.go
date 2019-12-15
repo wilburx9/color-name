@@ -11,14 +11,14 @@ func TestNormalized(t *testing.T) {
 		input string
 		want  string
 	}{
-		{"333", "FF333333"},
-		{"#333", "FF333333"},
-		{"FFFF", "FFFFFFFF"},
-		{"#FFFF", "FFFFFFFF"},
-		{"000000", "FF000000"},
-		{"#000000", "FF000000"},
-		{"AABBCCDD", "AABBCCDD"},
-		{"#AABBCCDD", "AABBCCDD"},
+		{"333", "333333"},
+		{"#333", "333333"},
+		{"FFFF", "FFFFFF"},
+		{"#FFFF", "FFFFFF"},
+		{"000000", "000000"},
+		{"#000000", "000000"},
+		{"AABBCCDD", "BBCCDD"},
+		{"#AABBCCDD", "BBCCDD"},
 	}
 
 	for _, test := range tests {
@@ -126,13 +126,13 @@ func TestColorNameIsReturned(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		it, err := name(test.hex, test.rgb)
+		it, err := colorName(test.hex, test.rgb)
 		if err != nil {
-			t.Errorf(`name("%v","%+v") == error %v`, test.hex, test.rgb, err)
+			t.Errorf(`colorName("%v","%+v") == error %v`, test.hex, test.rgb, err)
 		}
 
 		if it.name != test.expects {
-			t.Errorf(`name("%v","%+v") == %v. Expects %v`, test.hex, test.rgb, it.name, test.expects )
+			t.Errorf(`colorName("%v","%+v") == %v. Expects %v`, test.hex, test.rgb, it.name, test.expects )
 		}
 	}
 }

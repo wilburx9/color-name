@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"image/color"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -14,6 +16,40 @@ type HSL struct {
 }
 
 func main() {
+	hexPtr := flag.String("h", "",
+		"The hex value of the color whose colorName you want. Accepted formats: FFF, #FFF, FFFF, #FFFF, FFFFFF, #FFFFFF, FFFFFFFF, #FFFFFFFF ")
+	flag.Parse()
+
+	c := *hexPtr
+
+	if c == "" {
+		fmt.Print("Usage: color-name -h 000")
+		os.Exit(1)
+		return
+	}
+	normalized, err := normalize(c)
+	if err != nil {
+		fmt.Printf("%v is not a supported format", c)
+		os.Exit(1)
+		return
+	}
+
+	rgb, err := strToRGBA(normalized)
+	if err != nil {
+		fmt.Printf("%v Could not parse color to RGB", c)
+		os.Exit(1)
+		return
+	}
+
+	item, err := colorName(normalized, rgb)
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+		return
+	}
+
+	fmt.Println(item.name)
+
 }
 
 func normalize(color string) (string, error) {
@@ -21,39 +57,44 @@ func normalize(color string) (string, error) {
 	// Remove leading '#'
 	color = strings.TrimPrefix(color, "#")
 
+	errMsg := fmt.Errorf("#%v appears to be an invalid color\n", color)
+
+	bytesLen := len(color)
+	if bytesLen < 3 || bytesLen > 8 || bytesLen == 5 {
+		return "", errMsg
+	}
+
 	// Converting the passed hex to uppercase
 	color = strings.ToUpper(color)
 
 	i := len(color)
-	if i == 8 {
+	if i == 6 {
 		return color, nil
 	}
 	var buffer bytes.Buffer
 
-	pad := func() {
+	repeat := func() {
 		for _, i := range color {
 			str := fmt.Sprintf("%c", i)
 			buffer.WriteString(strings.Repeat(str, 2))
 		}
 	}
-
-	prepend := func() {
-		buffer.WriteString("FF")
-	}
+	// 01234567
 	switch i {
 	case 3:
-		prepend()
-		pad()
+		repeat()
 	case 4:
-		pad()
-	case 6:
-		prepend()
-		buffer.WriteString(color)
+		color = color[1:]
+		repeat()
+	case 8:
+		for i := 2; i < 7; i += 2 {
+			buffer.WriteString(color[i : i+2])
+		}
 	}
 
 	str := buffer.String()
 	if str == "" {
-		return "", fmt.Errorf("#%v appears to be an invalid colorStr\n", color)
+		return "", errMsg
 	}
 	return str, nil
 }
@@ -66,49 +107,35 @@ func rgbToHsl(rgba color.RGBA) HSL {
 	min := math.Min(r, math.Min(g, b))
 	max := math.Max(r, math.Max(g, b))
 	delta := max - min
-
 	l := (min + max) / 2
 
 	var s float64
-	if max != min {
-		var divisor float64
-		if l <= 0.5 {
-			divisor = max + min
+	if l > 0 && l < 1 {
+		if l < 0.5 {
+			s = delta / (2 * l)
 		} else {
-			divisor = 2 - max - min
+			s = delta / (2 - 2*l)
 		}
-		s = delta / divisor
 	}
 
 	var h float64
-
-	if delta != 0 {
-		var segment float64
-		var shift float64
-		switch max {
-		case r:
-			segment = (g - b) / delta
-			if segment < 0 {
-				shift = 360 / 60
-			} else {
-				shift = 0 / 60
-			}
-			break
-		case g:
-			segment = (b - r) / delta
-			shift = 120 / 60
-		case b:
-			segment = (r - g) / delta
-			shift = 240 / 60
+	if delta > 0 {
+		if max == r && max != g {
+			h += (g - b) / delta
 		}
-		h = segment + shift
+		if max == g && max != b {
+			h += 2 + (b-r)/delta
+		}
+		if max == b && max != r {
+			h += 4 + (r-g)/delta
+		}
+		h /= 6
 	}
 	return HSL{
-		h * 60,
-		s * 100,
-		l * 100,
+		H: h * 255,
+		S: s * 255,
+		L: l * 255,
 	}
-
 }
 
 func strToRGBA(str string) (color.RGBA, error) {
@@ -138,9 +165,8 @@ func strToRGBA(str string) (color.RGBA, error) {
 	}, nil
 }
 
-func name(str string, rgb color.RGBA) (item, error) {
+func colorName(str string, rgb color.RGBA) (item, error) {
 	var hsl = rgbToHsl(rgb)
-	var h, s, l = hsl.H * 255, hsl.S * 255, hsl.L * 255
 	var ndf, ndf1, ndf2 float64
 	var cl = -1
 	var df float64 = -1
@@ -151,15 +177,14 @@ func name(str string, rgb color.RGBA) (item, error) {
 
 		rbg2, _ := strToRGBA(v.color)
 		hsl2 := rgbToHsl(rbg2)
-		var h2, s2, l2 = hsl2.H * 255, hsl2.S * 255, hsl2.L * 255
 
 		ndf1 = math.Pow(float64(rgb.R-rbg2.R), 2) +
 			math.Pow(float64(rgb.G-rbg2.G), 2) +
 			math.Pow(float64(rgb.B-rbg2.B), 2)
 
-		ndf2 = math.Pow(h-h2, 2) +
-			math.Pow(s-s2, 2) +
-			math.Pow(l-l2, 2)
+		ndf2 = math.Pow(hsl.H-hsl2.H, 2) +
+			math.Pow(hsl.S-hsl2.S, 2) +
+			math.Pow(hsl.L-hsl2.L, 2)
 
 		ndf = ndf1 + (ndf2 * 2)
 		if df < 0 || df > ndf {
