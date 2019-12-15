@@ -17,9 +17,7 @@ For some reason, I feel better when my projects have properly named colours but 
   CLI tool fits my need more closely. The online tool itself is open source, so I ported it to go.
   
 ## :zap:How it works
-The colour hex is parsed, normalized and matched against a list 1500+ predefined colour names. An exact match is returned if found, otherwise, the closet matching name is returned. The predefined colour names were gotten from
-  [Wikipedia](http://en.wikipedia.org/wiki/List_of_colors), [Crayola](http://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors) 
-  and [Color-Name Dictionaries](http://www-swiss.ai.mit.edu/~jaffer/Color/Dictionaries.html) like [Resene](http://www-swiss.ai.mit.edu/~jaffer/Color/resenecolours.txt) by Chirag.
+The colour hex is parsed, normalized and matched against a list of 1500+ predefined names. An exact match is returned if found, otherwise, the colour name of the closet matching RGB and HSL is returned. The predefined colour names were compiled by Chirag from [Wikipedia](http://en.wikipedia.org/wiki/List_of_colors), [Crayola](http://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors) and [Color-Name Dictionaries](http://www-swiss.ai.mit.edu/~jaffer/Color/Dictionaries.html) like [Resene](http://www-swiss.ai.mit.edu/~jaffer/Color/resenecolours.txt).
   
   Please, note that there's no guarantee that names are 100% correct. 
   
