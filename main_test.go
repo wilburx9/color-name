@@ -76,8 +76,8 @@ func TestRGBParsedToValidToHSL(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if hsl := toHsl(test.input); !eq(hsl, test.expects) {
-			t.Errorf(`toHsl("%+v") == %+v. Expects %+v`, test.input, hsl, test.expects)
+		if hsl := rgbToHsl(test.input); !eq(hsl, test.expects) {
+			t.Errorf(`rgbToHsl("%+v") == %+v. Expects %+v`, test.input, hsl, test.expects)
 		}
 	}
 }
@@ -105,6 +105,34 @@ func TestInValidStringColorsNotParsedToRGBA(t *testing.T) {
 		v, e := strToRGBA(test)
 		if e == nil {
 			t.Errorf(`strToRGBA("%v") == %v`, test, v)
+		}
+	}
+}
+
+func TestColorNameIsReturned(t *testing.T) {
+	var tests = []struct {
+		rgb color.RGBA
+		hex string
+		expects string
+	}{
+		{color.RGBA{R: 255, G: 255, B: 255}, "FFFFFF", "White"},
+		 {color.RGBA{R: 0, G: 0, B: 0}, "000000", "Black"},
+		 {color.RGBA{R: 255, G: 0, B: 0}, "FF0000", "Red"},
+		 {color.RGBA{R: 0, G: 255, B: 0}, "00FF00", "Green"},
+		 {color.RGBA{R: 0, G: 0, B: 255}, "0000FF", "Blue"},
+		{color.RGBA{R: 0, G: 0, B: 128}, "000080", "Navy Blue"},
+		 {color.RGBA{R: 128, G: 0, B: 0}, "80FFFF", "Maroon"},
+		{color.RGBA{R: 191, G: 191, B: 191}, "BFBFBF", "Silver"},
+	}
+
+	for _, test := range tests {
+		it, err := name(test.hex, test.rgb)
+		if err != nil {
+			t.Errorf(`name("%v","%+v") == error %v`, test.hex, test.rgb, err)
+		}
+
+		if it.name != test.expects {
+			t.Errorf(`name("%v","%+v") == %v. Expects %v`, test.hex, test.rgb, it.name, test.expects )
 		}
 	}
 }
