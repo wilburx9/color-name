@@ -8,7 +8,7 @@ Clone the repo, cd to project root and run `go build`. Afterwards, you can run `
 ## Supported formats 
 Supported hex formats include 3, 4, 6, and 8 character length (ignoring the leading "#", if any) hex values. The leading "#" sign can be omitted or added. 
 
-Examples includes FFF, #FFF, FFFF, #FFFF, FFFFFF, #FFFFFF, FFFFFFFF, #FFFFFFFF
+Examples includes `FFF`, `#FFF`, `FFFF`, `#FFFF`, `FFFFFF`, `#FFFFFF`, `FFFFFFFF`, and `#FFFFFFFF`
 
 ## Motivation
 For some reason, I feel better when my projects have properly named colours but then I don't know all the names of the
