@@ -15,6 +15,10 @@ type HSL struct {
 	H, S, L float64
 }
 
+const (
+	warningColor = "\033[33m%s\033[0m\n"
+)
+
 func main() {
 	hexPtr := flag.String("h", "",
 		"The hex value of the color whose colorName you want. Accepted formats: FFF, #FFF, FFFF, #FFFF, FFFFFF, #FFFFFF, FFFFFFFF, #FFFFFFFF")
@@ -49,11 +53,12 @@ func main() {
 	}
 
 	if exactMatch {
-		fmt.Printf("#%v is %v\n", item.color, item.name)
+		fmt.Println(item.name)
 	} else {
-		fmt.Printf("#%v closely matches %v\n", item.color, item.name)
+		fmt.Printf(warningColor, item.name)
 	}
 }
+
 
 func normalize(color string) (string, error) {
 
@@ -82,7 +87,7 @@ func normalize(color string) (string, error) {
 			buffer.WriteString(strings.Repeat(str, 2))
 		}
 	}
-	// 01234567
+
 	switch i {
 	case 3:
 		repeat()
